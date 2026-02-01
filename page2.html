@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Guest — Valentine 💖</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #ffe6ec;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    h1 { color: #d1004f; margin-bottom: 40px; text-align: center; }
+
+    /* UI above hearts */
+    .buttons { display: flex; align-items: center; gap: 20px; position: relative; z-index: 10; }
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
+    #yes { background: #ff2f6d; color: white; }
+    #no  { background: #555; color: white; position: fixed; transition: left 140ms ease, top 140ms ease; left: 60%; top: 50%; }
+
+    button:focus { outline: 3px solid rgba(209,0,79,0.25); outline-offset: 4px; }
+
+    /* sticker overlay (topmost) */
+    #sticker {
+      position: fixed;
+      left: 50%;
+      top: 45%;
+      transform: translate(-50%, -50%) scale(0.9);
+      max-width: 70%;
+      max-height: 60%;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease, transform 300ms cubic-bezier(.2,.9,.2,1);
+      z-index: 9999;
+      background: transparent;
+      display: block;
+    }
+    #sticker.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+    /* hearts layer: above background, below UI */
+    .hearts-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 2; /* visible behind buttons (10) and below sticker (9999) */
+    }
+
+    /* heart elements */
+    .heart {
+      position: absolute;
+      bottom: -60px;
+      user-select: none;
+      will-change: transform, opacity;
+      display: inline-block;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+
+    /* float up and fade */
+    @keyframes heartFloat {
+      0%   { transform: translateY(0) translateX(0) scale(0.85) rotate(0deg); opacity: 1; }
+      65%  { opacity: 1; }
+      100% { transform: translateY(-140vh) translateX(var(--dx, 0px)) scale(1.05) rotate(var(--rot, 0deg)); opacity: 0; }
+    }
+
+    /* Respect user preference for reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .heart { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Will you be my Valentine? 💘</h1>
+
+  <div class="buttons">
+    <button id="yes" type="button" aria-label="Yes — open link in new tab">Yes ❤️</button>
+    <button id="no"  type="button" aria-label="No">No 😜</button>
+  </div>
+
+  <!-- Sticker image from this repo -->
+  <img id="sticker" src="https://raw.githubusercontent.com/sayonmallick/Guest/main/myphoto.jpg" alt="Sticker">
+
+  <!-- hearts container -->
+  <div class="hearts-layer" aria-hidden="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    // ---------- CONFIG ----------
+    const targetUrl = "https://sayonmallick.github.io/Guest/";
+    const SPAWN_INTERVAL = 180; // ms between spawns (lower = more hearts)
+    const MAX_HEARTS = 45;      // max simultaneous hearts
+    const INITIAL_SPAWN = 8;
+
+    const HEART_CHARS = ['❤','💖','💘','❣️','💕','💓'];
+    const HEART_COLORS = ['#ff2f6d','#ff7f50','#ffb3c6','#ffd700','#ff66b2','#ff99cc'];
+
+    // ---------- ELEMENTS ----------
+    const heartsLayer = document.querySelector('.hearts-layer');
+    const noBtn = document.getElementById('no');
+    const yesBtn = document.getElementById('yes');
+    const sticker = document.getElementById('sticker');
+
+    // preload sticker
+    const _pre = new Image();
+    _pre.src = sticker.src;
+    sticker.setAttribute('aria-hidden', 'true');
+
+    // ---------- NO button behavior ----------
+    function moveNo() {
+      const padding = 12;
+      const btnW = noBtn.offsetWidth || 100;
+      const btnH = noBtn.offsetHeight || 40;
+      const maxX = Math.max(window.innerWidth - btnW - padding, padding);
+      const maxY = Math.max(window.innerHeight - btnH - padding, padding);
+      const x = Math.random() * (maxX - padding) + padding;
+      const y = Math.random() * (maxY - padding) + padding;
+      noBtn.style.left = x + 'px';
+      noBtn.style.top  = y + 'px';
+    }
+    noBtn.addEventListener('pointerenter', moveNo);
+    noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveNo(); }, {passive:false});
+    noBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); moveNo(); });
+    noBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); moveNo(); }});
+    window.addEventListener('load', () => { moveNo(); });
+
+    // ---------- confetti & sound ----------
+    function firecrackerBurst() {
+      if (typeof confetti !== 'function') return;
+      const colors = [['#ff2f6d','#ffd700','#ff7f50'], ['#ffb3c6','#ffffff','#ffd700'], ['#00aaff','#a0e9ff','#ffffff']];
+      const bursts = [
+        {delay:0, particleCount:70, spread:30, startVelocity:80},
+        {delay:120, particleCount:60, spread:45, startVelocity:60},
+        {delay:240, particleCount:80, spread:60, startVelocity:90},
+        {delay:360, particleCount:100, spread:100, startVelocity:40}
+      ];
+      bursts.forEach((b,i) => {
+        setTimeout(() => {
+          confetti({
+            particleCount: b.particleCount,
+            angle: 90,
+            spread: b.spread,
+            startVelocity: b.startVelocity,
+            origin: { x: 0.5 + (Math.random() - 0.5) * 0.2, y: 0.25 + (Math.random() - 0.2) * 0.2 },
+            colors: colors[i % colors.length],
+          });
+        }, b.delay);
+      });
+      setTimeout(() => {
+        confetti({ particleCount: 180, spread: 160, startVelocity: 30, origin:{x:0.5,y:0.4} });
+      }, 520);
+    }
+
+    let audioCtx = null;
+    function playFirecrackerSound() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = audioCtx;
+        const master = ctx.createGain(); master.connect(ctx.destination); master.gain.value = 0.9;
+
+        const bufferSize = ctx.sampleRate * 0.18;
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * Math.exp(-3*i/bufferSize);
+        const noise = ctx.createBufferSource(); noise.buffer = noiseBuffer;
+        const noiseFilter = ctx.createBiquadFilter(); noiseFilter.type = 'highpass'; noiseFilter.frequency.value = 900;
+        noise.connect(noiseFilter); noiseFilter.connect(master);
+
+        const osc = ctx.createOscillator(); osc.type='triangle';
+        const oscGain = ctx.createGain(); osc.connect(oscGain); oscGain.connect(master);
+        const now = ctx.currentTime;
+        noise.start(now); noise.stop(now + 0.18);
+        osc.start(now); osc.frequency.setValueAtTime(1200, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+        oscGain.gain.setValueAtTime(0.0001, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.6, now + 0.005);
+        oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+        osc.stop(now + 0.14);
+      } catch (err) {
+        console.warn('Audio not available:', err);
+      }
+    }
+
+    // ---------- hearts system (CSS animation based) ----------
+    let activeHearts = 0;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function spawnHeart() {
+      if (prefersReduced) return;
+      if (!heartsLayer) return;
+      if (activeHearts >= MAX_HEARTS) return;
+
+      const el = document.createElement('div');
+      el.className = 'heart';
+      el.textContent = HEART_CHARS[Math.floor(Math.random() * HEART_CHARS.length)];
+      const color = HEART_COLORS[Math.floor(Math.random() * HEART_COLORS.length)];
+      const size = 14 + Math.random() * 44; // px
+      const left = Math.random() * 100;     // vw percent
+      const duration = 3200 + Math.random() * 3000; // ms
+      const dx = (Math.random() * 80 - 40); // px horizontal drift
+      const rot = Math.floor(Math.random() * 60 - 30); // rotation degrees
+
+      el.style.left = left + 'vw';
+      el.style.fontSize = size + 'px';
+      el.style.color = color;
+      // CSS custom properties used by keyframes (translateX via var)
+      el.style.setProperty('--dx', dx + 'px');
+      el.style.setProperty('--rot', rot + 'deg');
+      el.style.animation = heartFloat ${duration}ms linear forwards;
+
+      heartsLayer.appendChild(el);
+      activeHearts++;
+
+      // remove after animation finishes
+      setTimeout(() => {
+        el.remove();
+        activeHearts = Math.max(0, activeHearts - 1);
+      }, duration + 120);
+    }
+
+    // spawn loop
+    let spawnTimer = null;
+    function startSpawning() {
+      if (prefersReduced) return;
+      if (spawnTimer) clearInterval(spawnTimer);
+      spawnTimer = setInterval(spawnHeart, SPAWN_INTERVAL);
+    }
+    function stopSpawning() {
+      if (spawnTimer) clearInterval(spawnTimer);
+      spawnTimer = null;
+    }
+
+    // start on load with a small burst
+    window.addEventListener('load', () => {
+      startSpawning();
+      for (let i = 0; i < INITIAL_SPAWN; i++) setTimeout(spawnHeart, i * 120);
+    });
+
+    // debug logs for troubleshooting
+    sticker.addEventListener('error', () => console.error('Sticker image failed to load:', sticker.src));
+    sticker.addEventListener('load', () => console.log('Sticker image loaded:', sticker.src));
+    console.log('Hearts spawn config:', { SPAWN_INTERVAL, MAX_HEARTS, INITIAL_SPAWN });
+  </script>
+</body>
+</html>
