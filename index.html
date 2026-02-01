@@ -37,7 +37,7 @@
       100% { color: #00ff00; }
     }
 
-    #page1 h1 { font-size: 28px; padding: 0 10px; line-height: 1.4; z-index: 10; }
+    #page1 h1 { font-size: 28px; padding: 0 10px; line-height: 1.4; z-index: 10; position: relative; }
     #page1 { z-index: 10; display: flex; flex-direction: column; align-items: center; width: 100%; }
     
     .buttons { 
@@ -63,14 +63,7 @@
     }
 
     #yes { background: #ffffff; color: #ff0000; min-width: 100px; z-index: 11; }
-    
-    /* No button starts relative but moves to fixed once hovered */
-    #no { 
-      background: #555; 
-      color: white; 
-      z-index: 10;
-      position: relative; 
-    }
+    #no { background: #555; color: white; z-index: 10; position: relative; }
 
     #page2 { display: none; z-index: 10; width: 100%; }
     #page2 h1 { font-size: 32px; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
@@ -82,7 +75,7 @@
       font-weight: bold;
     }
     
-    #waBtn { background: #25D366; color: white; margin-top: 20px; font-size: 16px; }
+    #waBtn { background: #25D366; color: white; margin-top: 20px; font-size: 16px; text-decoration: none; }
 
     #secret {
       display: none; margin: 20px auto; font-size: 18px; width: 95%;
@@ -97,7 +90,7 @@
     .hearts-layer { z-index: 2; }
     .name-layer { z-index: 15; }
 
-    .heart { position: absolute; bottom: -60px; user-select: none; }
+    .heart { position: absolute; bottom: -60px; user-select: none; z-index: 2; }
     .name {
       position: absolute; bottom: -60px; color: white; font-size: 20px; font-weight: bold;
       text-shadow: 0 0 10px rgba(255,255,255,0.9);
@@ -129,7 +122,7 @@
     <div id="timer">Loading timer...</div>
     <p>See you soon, my love ✨</p>
     
-    <a id="waBtn" href="https://wa.me/9123330501?text=Yes!%20I%20will%20be%20your%20Valentine!%20❤️✨" target="_blank">
+    <a id="waBtn" href="https://wa.me/919123330501?text=Yes!%20I%20will%20be%20your%20Valentine!%20❤️✨" target="_blank">
       Reply on WhatsApp 📱
     </a>
   </div>
@@ -154,7 +147,6 @@
   let yesScale = 1;
   let noHasMoved = false;
 
-  // Set meeting date
   const meetingDate = new Date("2026-07-14T00:00:00").getTime();
 
   function updateTimer() {
@@ -173,7 +165,6 @@
         noBtn.style.position = 'fixed';
         noHasMoved = true;
     }
-    // "Catchable" logic: Keeps the button within a visible 70% range of the screen
     const x = Math.random() * (window.innerWidth * 0.7);
     const y = Math.random() * (window.innerHeight * 0.7);
     noBtn.style.left = x + 'px';
@@ -183,10 +174,8 @@
     yesBtn.style.transform = `scale(${yesScale})`;
   }
 
-  // Use 'mouseover' for catchable hover effect and 'touchstart' for mobile
   noBtn.addEventListener('mouseover', moveNo);
   noBtn.addEventListener('touchstart', (e) => { 
-    // Small chance to let it be clicked on mobile
     if(Math.random() > 0.3) {
         e.preventDefault(); 
         moveNo(); 
@@ -207,6 +196,7 @@
     setTimeout(() => el.remove(), 5000);
   }
   
+  // START MULTICOLORED RAIN IMMEDIATELY (For First Page)
   setInterval(spawnHeart, 400);
 
   function spawnName() {
