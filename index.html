@@ -30,16 +30,26 @@
     }
 
     @keyframes colorCycle {
-      0% { color: #00ff00; filter: drop-shadow(0 0 5px #00ff00); }
-      25% { color: #ffff00; filter: drop-shadow(0 0 5px #ffff00); }
-      50% { color: #00bfff; filter: drop-shadow(0 0 5px #00bfff); }
-      75% { color: #ff69b4; filter: drop-shadow(0 0 5px #ff69b4); }
-      100% { color: #00ff00; filter: drop-shadow(0 0 5px #00ff00); }
+      0% { color: #00ff00; }
+      25% { color: #ffff00; }
+      50% { color: #00bfff; }
+      75% { color: #ff69b4; }
+      100% { color: #00ff00; }
     }
 
-    #page1 h1 { font-size: 28px; padding: 0 10px; line-height: 1.4; }
+    #page1 h1 { font-size: 28px; padding: 0 10px; line-height: 1.4; z-index: 10; }
     #page1 { z-index: 10; display: flex; flex-direction: column; align-items: center; width: 100%; }
-    .buttons { display: flex; flex-direction: row; gap: 15px; margin-top: 30px; position: relative; width: 100%; justify-content: center; }
+    
+    .buttons { 
+      display: flex; 
+      flex-direction: row; 
+      gap: 15px; 
+      margin-top: 30px; 
+      position: relative; 
+      width: 100%; 
+      justify-content: center; 
+      z-index: 10;
+    }
 
     button {
       padding: 15px 25px;
@@ -49,11 +59,18 @@
       cursor: pointer;
       font-weight: bold;
       touch-action: manipulation;
-      transition: transform 0.2s ease;
+      transition: transform 0.2s ease, left 0.3s ease, top 0.3s ease;
     }
 
-    #yes { background: #ffffff; color: #ff0000; min-width: 100px; z-index: 100; }
-    #no  { background: #555; color: white; position: fixed; z-index: 90; }
+    #yes { background: #ffffff; color: #ff0000; min-width: 100px; z-index: 11; }
+    
+    /* No button starts relative but moves to fixed once hovered */
+    #no { 
+      background: #555; 
+      color: white; 
+      z-index: 10;
+      position: relative; 
+    }
 
     #page2 { display: none; z-index: 10; width: 100%; }
     #page2 h1 { font-size: 32px; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
@@ -65,17 +82,16 @@
       font-weight: bold;
     }
     
-    #waBtn { background: #25D366; color: white; margin-top: 20px; font-size: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    #waBtn { background: #25D366; color: white; margin-top: 20px; font-size: 16px; }
 
     #secret {
       display: none; margin: 20px auto; font-size: 18px; width: 95%;
       background: rgba(255, 255, 255, 0.25); padding: 25px;
       border-radius: 20px; backdrop-filter: blur(10px);
       box-sizing: border-box;
-      border: 1px solid rgba(255,255,255,0.3);
     }
 
-    #timer { font-size: 24px; font-weight: bold; margin: 15px 0; color: #fff; }
+    #timer { font-size: 24px; font-weight: bold; margin: 15px 0; }
 
     .hearts-layer, .name-layer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
     .hearts-layer { z-index: 2; }
@@ -97,10 +113,6 @@
 
 <body>
 
-<audio id="bgMusic" loop>
-  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" type="audio/mpeg">
-</audio>
-
 <div id="page1">
   <h1>Will you be my Valentine? <span class="rainbow-text">❤️</span></h1>
   <div class="buttons">
@@ -113,11 +125,11 @@
   <h1>I Love You 💘</h1>
   <button id="surpriseBtn">Surprise Me</button>
   <div id="secret">
-    <p>💌 Counting down every moment until you're back in my arms. See you soon, my love. 💌</p>
+    <p>💌 Counting down until I see you again... 💌</p>
     <div id="timer">Loading timer...</div>
     <p>See you soon, my love ✨</p>
     
-    <a id="waBtn" href="https://wa.me/9123330501?text=Yes!%20I%20will%20be%20your%20Valentine!%20❤️✨" target="_blank">
+    <a id="waBtn" href="https://wa.me/YOUR_PHONE_NUMBER?text=Yes!%20I%20will%20be%20your%20Valentine!%20❤️✨" target="_blank">
       Reply on WhatsApp 📱
     </a>
   </div>
@@ -137,21 +149,18 @@
   const secret = document.getElementById('secret');
   const heartsLayer = document.querySelector('.hearts-layer');
   const nameLayer = document.querySelector('.name-layer');
-  const bgMusic = document.getElementById('bgMusic');
   const timerDisplay = document.getElementById('timer');
 
   let yesScale = 1;
+  let noHasMoved = false;
 
-  // CHANGE THIS DATE to your meeting day (YYYY-MM-DD format)
-  const meetingDate = new Date("2026-07-14T00:00:00").getTime();
+  // Set meeting date
+  const meetingDate = new Date("2026-02-14T00:00:00").getTime();
 
   function updateTimer() {
     const now = new Date().getTime();
     const diff = meetingDate - now;
-    if (diff < 0) {
-        timerDisplay.innerHTML = "The day is here! ❤️";
-        return;
-    }
+    if (diff < 0) { timerDisplay.innerHTML = "The day is here! ❤️"; return; }
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -160,16 +169,29 @@
   }
 
   function moveNo() {
-    const x = Math.random() * (window.innerWidth - 100);
-    const y = Math.random() * (window.innerHeight - 150);
+    if (!noHasMoved) {
+        noBtn.style.position = 'fixed';
+        noHasMoved = true;
+    }
+    // "Catchable" logic: Keeps the button within a visible 70% range of the screen
+    const x = Math.random() * (window.innerWidth * 0.7);
+    const y = Math.random() * (window.innerHeight * 0.7);
     noBtn.style.left = x + 'px';
     noBtn.style.top  = y + 'px';
-    yesScale += 0.3;
+    
+    yesScale += 0.15;
     yesBtn.style.transform = `scale(${yesScale})`;
   }
 
-  noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveNo(); });
-  noBtn.addEventListener('click', moveNo);
+  // Use 'mouseover' for catchable hover effect and 'touchstart' for mobile
+  noBtn.addEventListener('mouseover', moveNo);
+  noBtn.addEventListener('touchstart', (e) => { 
+    // Small chance to let it be clicked on mobile
+    if(Math.random() > 0.3) {
+        e.preventDefault(); 
+        moveNo(); 
+    }
+  });
 
   function spawnHeart() {
     const el = document.createElement('div');
@@ -198,10 +220,10 @@
   }
 
   yesBtn.addEventListener('click', () => {
-    bgMusic.play().catch(e => console.log("Audio play blocked by browser."));
     confetti({ particleCount: 150, spread: 60, origin: { y: 0.7 } });
     setTimeout(() => {
       page1.style.display = 'none';
+      noBtn.style.display = 'none';
       document.body.style.background = "linear-gradient(180deg, #ff4d4d, #ff9eb8)";
       page2.style.display = 'block';
       setInterval(spawnName, 800);
