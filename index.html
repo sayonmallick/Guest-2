@@ -1,39 +1,212 @@
-<div id="secret">
-  <h1>💌 Counting down every moment until you're back in my arms. See you soon, my love 💌</h1>
-  
-  <div id="datePickerSection" style="margin-top: 20px;">
-    <p style="font-size: 18px;">When should our next date be? 🥰</p>
-    <input type="date" id="dateInput" style="padding: 10px; border-radius: 8px; border: none; font-size: 16px; outline: none; cursor: pointer;">
-    <div id="dateSelectedMessage" style="display: none; margin-top: 15px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px;"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Valentine 💖</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      /* Changed to a vibrant Red */
+      background: #ff0000; 
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
+      transition: background 1.5s ease;
+      color: white;
+      text-align: center;
+    }
+
+    #page1 {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .buttons { display: flex; gap: 20px; margin-top: 20px; }
+
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+
+    #yes { background: #ffffff; color: #ff0000; }
+    #no  { background: #555; color: white; position: fixed; left: 60%; top: 50%; }
+
+    #page2 {
+      display: none;
+      z-index: 10;
+      width: 100%;
+    }
+
+    #page2 h1 {
+      font-size: 48px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: white;
+      text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    #surpriseBtn {
+      background: #ffffff;
+      color: #ff2f6d;
+      padding: 14px 45px;
+      font-size: 18px;
+      border-radius: 30px;
+      border: none;
+      margin-bottom: 20px;
+    }
+
+    #secret {
+      display: none; 
+      margin: 20px auto;
+      font-size: 22px;
+      max-width: 85%;
+      line-height: 1.6;
+      color: white;
+      background: rgba(255, 255, 255, 0.25);
+      padding: 25px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hearts-layer, .name-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .hearts-layer { z-index: 2; }
+    .name-layer { z-index: 15; }
+
+    .heart {
+      position: absolute;
+      bottom: -60px;
+      user-select: none;
+      will-change: transform, opacity;
+      /* We will set the color via JS */
+    }
+
+    .name {
+      position: absolute;
+      bottom: -60px;
+      color: white;
+      font-size: 22px;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(255,255,255,0.9);
+      animation: heartFloat 5s linear forwards;
+    }
+
+    @keyframes heartFloat {
+      0%   { transform: translateY(0) translateX(0) scale(0.85); opacity: 1; }
+      100% { transform: translateY(-140vh) translateX(var(--dx, 0px)) scale(1.05); opacity: 0; }
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="page1">
+  <h1>Will you be my Valentine? 💘</h1>
+  <div class="buttons">
+    <button id="yes">Yes ❤️</button>
+    <button id="no">No 😜</button>
   </div>
 </div>
 
+<div id="page2">
+  <h1>I Love You 💘</h1>
+  <button id="surpriseBtn">Surprise Me</button>
+  <div id="secret">
+    <h1>💌 Counting down every moment until you're back in my arms. See you soon, my love 💌💘🌸✨</h1>
+  </div>
+</div>
+
+<div class="hearts-layer"></div>
+<div class="name-layer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <script>
-  // ... (Keep your existing JS for moveNo, spawnHeart, spawnName, etc.) ...
+  const page1 = document.getElementById('page1');
+  const page2 = document.getElementById('page2');
+  const yesBtn = document.getElementById('yes');
+  const noBtn = document.getElementById('no');
+  const surpriseBtn = document.getElementById('surpriseBtn');
+  const secret = document.getElementById('secret');
+  const heartsLayer = document.querySelector('.hearts-layer');
+  const nameLayer = document.querySelector('.name-layer');
 
-  // New Date Picker Logic
-  const dateInput = document.getElementById('dateInput');
-  const dateMsg = document.getElementById('dateSelectedMessage');
+  function moveNo() {
+    noBtn.style.left = Math.random() * (window.innerWidth - 100) + 'px';
+    noBtn.style.top  = Math.random() * (window.innerHeight - 50) + 'px';
+  }
+  noBtn.addEventListener('mouseenter', moveNo);
+  noBtn.addEventListener('click', moveNo);
 
-  dateInput.addEventListener('change', (e) => {
-    const chosenDate = new Date(e.target.value).toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+  function spawnHeart() {
+    const el = document.createElement('div');
+    el.className = 'heart';
+    el.textContent = 'Mithi❤️'; // Using standard heart, but coloring it
     
-    dateMsg.innerHTML = `Perfect! Mark your calendar for ${chosenDate}! 🥂✨`;
-    dateMsg.style.display = 'block';
+    // Multicolors: Green, Yellow, Blue, Pink, White
+    const colors = ['#00ff00', '#ffff00', '#00bfff', '#ff69b4', '#ffffff', '#ffa500'];
+    el.style.color = colors[Math.floor(Math.random() * colors.length)];
     
-    // Extra confetti for the date selection!
-    confetti({
-      particleCount: 100,
-      startVelocity: 30,
-      spread: 360,
-      origin: { x: 0.5, y: 0.8 }
-    });
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.fontSize = (16 + Math.random() * 30) + 'px';
+    el.style.setProperty('--dx', (Math.random() * 100 - 50) + 'px');
+    el.style.animation = `heartFloat ${3 + Math.random() * 3}s linear forwards`;
+    
+    heartsLayer.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  }
+  
+  // Start the colorful heart rain immediately
+  setInterval(spawnHeart, 300);
+
+  function spawnName() {
+    const n = document.createElement('div');
+    n.className = 'name';
+    n.textContent = 'Mithi ❤️';
+    n.style.left = Math.random() * 100 + 'vw';
+    n.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
+    nameLayer.appendChild(n);
+    setTimeout(() => n.remove(), 5000);
+  }
+
+  yesBtn.addEventListener('click', () => {
+    // Confetti effect
+    confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
+
+    // Transition to Page 2
+    setTimeout(() => {
+      page1.style.display = 'none';
+      document.body.style.background = "linear-gradient(180deg, #ff4d4d, #ff9eb8)";
+      page2.style.display = 'block';
+
+      // Start floating names
+      setInterval(spawnName, 700);
+    }, 500); // Reduced delay for a snappier feel
   });
 
-  // (Ensure your existing event listeners for yesBtn and surpriseBtn are still there)
+  surpriseBtn.addEventListener('click', () => {
+    secret.style.display = 'block';
+    surpriseBtn.style.display = 'none';
+  });
 </script>
+
+</body>
+</html>
