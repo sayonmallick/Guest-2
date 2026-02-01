@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>I Love You ❤️</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: linear-gradient(180deg, #ff7aa2, #ff9eb8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 42px;
+  font-weight: 300;
+  margin-bottom: 40px;
+  text-shadow: 0 0 12px rgba(255,255,255,0.6);
+}
+
+button {
+  background: #ff2f6d;
+  color: white;
+  border: none;
+  padding: 14px 36px;
+  font-size: 18px;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+#secret {
+  display: none;
+  margin-top: 40px;
+  font-size: 22px;
+  max-width: 85%;
+  line-height: 1.6;
+}
+
+/* floating hearts */
+.heart {
+  position: absolute;
+  bottom: -40px;
+  font-size: 22px;
+  animation: floatUp 5s linear forwards;
+}
+
+@keyframes floatUp {
+  to {
+    transform: translateY(-110vh);
+    opacity: 0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>I Love You<br>Shivani 💖</h1>
+
+<button id="surpriseBtn">Surprise Me</button>
+
+<div id="secret">
+  💌 You are the most beautiful part of my life.<br>
+  Saying YES made my world brighter 🌸✨
+</div>
+
+<script>
+const btn = document.getElementById("surpriseBtn");
+const secret = document.getElementById("secret");
+
+btn.addEventListener("click", () => {
+  btn.style.display = "none";
+  secret.style.display = "block";
+
+  setInterval(() => {
+    const h = document.createElement("div");
+    h.className = "heart";
+    h.innerText = "❤️";
+    h.style.left = Math.random() * 100 + "vw";
+    h.style.fontSize = (16 + Math.random() * 30) + "px";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 5000);
+  }, 250);
+});
+</script>
+
+</body>
+</html>
